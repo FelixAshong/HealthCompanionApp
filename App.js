@@ -3,6 +3,8 @@ import { SafeAreaView, StyleSheet, StatusBar } from 'react-native';
 import AppNavigator from './navigation/AppNavigator';
 import { AppProvider } from './context/AppContext'; // Correct import path
 
+
+
 export default function App() {
   return (
     <SafeAreaView style={styles.container}>
@@ -14,9 +16,11 @@ export default function App() {
   );
 }
 
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#FFFFFF',
   },
 });
+

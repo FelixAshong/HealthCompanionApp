@@ -1,7 +1,81 @@
-import React from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image } from 'react-native';
+import React, { useState, useRef, useEffect } from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  ScrollView,
+  TouchableOpacity,
+  Image,
+  Dimensions,
+  Linking,
+} from 'react-native';
+import Carousel from 'react-native-reanimated-carousel'; // Only this import
+
+const { width: screenWidth } = Dimensions.get('window');
 
 export default function HomeScreen({ navigation }) {
+  const [activeSlide, setActiveSlide] = useState(0);
+  const carouselRef = useRef(null);
+
+  // Slideshow images
+  const slides = [
+    require('../assets/slide1.jpg'), // Replace with your images
+    require('../assets/slide2.jpg'),
+    require('../assets/slide3.jpg'),
+  ];
+
+  // Auto-slide every 5 seconds
+  useEffect(() => {
+    const interval = setInterval(() => {
+      if (carouselRef.current) {
+        const nextSlide = (activeSlide + 1) % slides.length;
+        carouselRef.current.scrollTo({ index: nextSlide, animated: true });
+        setActiveSlide(nextSlide);
+      }
+    }, 5000);
+
+    return () => clearInterval(interval);
+  }, [activeSlide]);
+
+  // Render each slide
+  const renderSlide = ({ item, index }) => (
+    <View style={styles.slide}>
+      <Image source={item} style={styles.slideImage} />
+    </View>
+  );
+
+  // Mental health specialists data
+  const specialists = [
+    {
+      name: 'Dr. Daniel G. Amen',
+      description:
+        'A renowned psychiatrist and brain health specialist, Dr. Amen is known for his work on SPECT imaging and mental health.',
+      contact: 'Website: amenclinics.com',
+      link: 'https://www.amenclinics.com',
+    },
+    {
+      name: 'Dr. Brene Brown',
+      description:
+        'A research professor and expert on vulnerability, courage, and empathy. Her work has revolutionized mental health discussions.',
+      contact: 'Website: brenebrown.com',
+      link: 'https://brenebrown.com',
+    },
+    {
+      name: 'Dr. Gabor Maté',
+      description:
+        'A physician and author specializing in trauma, addiction, and mental health. His holistic approach has helped many.',
+      contact: 'Website: drgabormate.com',
+      link: 'https://drgabormate.com',
+    },
+  ];
+
+  // Open specialist's website
+  const handleContactPress = (link) => {
+    Linking.openURL(link).catch((err) =>
+      console.error('Failed to open URL:', err)
+    );
+  };
+
   return (
     <ScrollView contentContainerStyle={styles.container}>
       {/* Welcome Section */}
@@ -13,40 +87,51 @@ export default function HomeScreen({ navigation }) {
         </Text>
       </View>
 
-      {/* App Features Section */}
-      <View style={styles.featuresSection}>
-        <Text style={styles.sectionTitle}>App Features</Text>
-        <View style={styles.featureCard}>
-          <Image
-            source={require('../assets/mood-tracker-icon.png')} // Replace with your icon
-            style={styles.featureIcon}
-          />
-          <Text style={styles.featureTitle}>Mood Tracker</Text>
-          <Text style={styles.featureDescription}>
-            Log your daily mood and track trends over time to better understand your emotional
-            well-being.
-          </Text>
+      {/* Slideshow Section */}
+      <View style={styles.slideshowSection}>
+        <Carousel
+          ref={carouselRef}
+          data={slides}
+          renderItem={renderSlide}
+          width={screenWidth}
+          height={200}
+          autoPlay={true}
+          autoPlayInterval={5000}
+          loop={true}
+          onSnapToItem={(index) => setActiveSlide(index)}
+        />
+        <View style={styles.pagination}>
+          {slides.map((_, index) => (
+            <View
+              key={index}
+              style={[
+                styles.paginationDot,
+                index === activeSlide && styles.paginationDotActive,
+              ]}
+            />
+          ))}
         </View>
-        <View style={styles.featureCard}>
-          <Image
-            source={require('../assets/journal-icon.png')} // Replace with your icon
-            style={styles.featureIcon}
-          />
-          <Text style={styles.featureTitle}>Journal</Text>
-          <Text style={styles.featureDescription}>
-            Write about your day, reflect on your thoughts, and gain clarity through journaling.
-          </Text>
-        </View>
-        <View style={styles.featureCard}>
-          <Image
-            source={require('../assets/breathing-icon.png')} // Replace with your icon
-            style={styles.featureIcon}
-          />
-          <Text style={styles.featureTitle}>Guided Breathing</Text>
-          <Text style={styles.featureDescription}>
-            Practice mindfulness with guided breathing exercises to reduce stress and improve focus.
-          </Text>
-        </View>
+      </View>
+
+      {/* Mental Health Specialists Section */}
+      <View style={styles.specialistsSection}>
+        <Text style={styles.sectionTitle}>Famous Mental Health Specialists</Text>
+        {specialists.map((specialist, index) => (
+          <TouchableOpacity
+            key={index}
+            style={styles.specialistCard}
+            onPress={() => handleContactPress(specialist.link)}
+          >
+            <View style={styles.specialistIconContainer}>
+              <Text style={styles.specialistIcon}>👨‍⚕️</Text>
+            </View>
+            <View style={styles.specialistTextContainer}>
+              <Text style={styles.specialistName}>{specialist.name}</Text>
+              <Text style={styles.specialistDescription}>{specialist.description}</Text>
+              <Text style={styles.specialistContact}>{specialist.contact}</Text>
+            </View>
+          </TouchableOpacity>
+        ))}
       </View>
 
       {/* Call-to-Action Section */}
@@ -90,7 +175,34 @@ const styles = StyleSheet.create({
     color: '#666666',
     lineHeight: 24,
   },
-  featuresSection: {
+  slideshowSection: {
+    marginBottom: 30,
+  },
+  slide: {
+    borderRadius: 10,
+    overflow: 'hidden',
+  },
+  slideImage: {
+    width: '92%',
+    height: 200,
+    borderRadius: 10,
+  },
+  pagination: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    marginTop: 10,
+  },
+  paginationDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: '#CCCCCC',
+    marginHorizontal: 5,
+  },
+  paginationDotActive: {
+    backgroundColor: '#6C63FF',
+  },
+  specialistsSection: {
     marginBottom: 30,
   },
   sectionTitle: {
@@ -99,7 +211,7 @@ const styles = StyleSheet.create({
     color: '#333333',
     marginBottom: 20,
   },
-  featureCard: {
+  specialistCard: {
     backgroundColor: '#F8F9FA',
     borderRadius: 10,
     padding: 20,
@@ -107,21 +219,35 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
   },
-  featureIcon: {
-    width: 40,
-    height: 40,
+  specialistIconContainer: {
+    backgroundColor: '#6C63FF',
+    borderRadius: 10,
+    padding: 10,
     marginRight: 15,
   },
-  featureTitle: {
+  specialistIcon: {
+    fontSize: 24,
+    color: '#FFFFFF',
+  },
+  specialistTextContainer: {
+    flex: 1,
+  },
+  specialistName: {
     fontSize: 18,
     fontWeight: 'bold',
     color: '#333333',
     marginBottom: 5,
   },
-  featureDescription: {
+  specialistDescription: {
     fontSize: 14,
     color: '#666666',
     lineHeight: 20,
+    marginBottom: 5,
+  },
+  specialistContact: {
+    fontSize: 14,
+    color: '#6C63FF',
+    fontWeight: 'bold',
   },
   ctaSection: {
     alignItems: 'center',
