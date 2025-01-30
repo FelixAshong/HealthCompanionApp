@@ -1,293 +1,217 @@
-import React, { useState, useContext } from 'react';
-import {
-  View,
-  TextInput,
-  StyleSheet,
-  TouchableOpacity,
-  Text,
-  Keyboard,
-  TouchableWithoutFeedback,
-  KeyboardAvoidingView,
-  Platform,
-  FlatList,
-  Alert,
-  Image,
-  ScrollView, // Import ScrollView to make the screen scrollable
-} from 'react-native';
+import React, { useState, useContext, useEffect } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, FlatList, Alert, Image, ScrollView } from 'react-native';
+import MoodPicker from '../components/MoodPicker';
 import { AppContext } from '../context/AppContext';
-import { launchImageLibrary } from 'react-native-image-picker'; // For image picking
-import MoodPicker from '../components/MoodPicker'; // Custom component for selecting mood
+import { PieChart } from 'react-native-chart-kit'; // For the Pie chart (Install react-native-chart-kit)
 
-export default function JournalScreen() {
-  const { journalEntries, setJournalEntries } = useContext(AppContext);
-  const [entry, setEntry] = useState('');
-  const [characterCount, setCharacterCount] = useState(0);
-  const [imageUri, setImageUri] = useState(null);
-  const [mood, setMood] = useState(2); // Default mood (e.g., Neutral)
-  const [tags, setTags] = useState([]);
-  const [searchText, setSearchText] = useState('');
-  const maxCharacterLimit = 500;
+export default function MoodTrackerScreen() {
+  const { moodData, setMoodData } = useContext(AppContext);
+  const [selectedMood, setSelectedMood] = useState(2);
+  const [moodDistribution, setMoodDistribution] = useState([0, 0, 0, 0, 0]); // Stores counts for each mood (0 to 4)
 
-  const saveEntry = () => {
-    if (entry.trim()) {
-      const newEntry = { 
-        date: new Date().toISOString(),
-        text: entry,
-        imageUri,
-        mood,
-        tags,
-      };
-      setJournalEntries([...journalEntries, newEntry]);
-      setEntry('');
-      setCharacterCount(0);
-      setImageUri(null);
-      setMood(2);
-      setTags([]);
-      Keyboard.dismiss();
-    } else {
-      alert('Please write something before saving.');
-    }
+  useEffect(() => {
+    // Update mood distribution whenever mood data changes
+    const newDistribution = [0, 0, 0, 0, 0];
+    moodData.forEach(entry => {
+      newDistribution[entry.mood] += 1;
+    });
+    setMoodDistribution(newDistribution);
+  }, [moodData]);
+
+  const saveMood = () => {
+    const newMoodEntry = { date: new Date().toISOString(), mood: selectedMood };
+    setMoodData([...moodData, newMoodEntry]);
   };
 
-  const deleteEntry = (index) => {
+  const deleteMoodHistory = () => {
     Alert.alert(
-      "Delete Entry",
-      "Are you sure you want to delete this entry?",
+      "Clear Mood History",
+      "Are you sure you want to clear all mood history?",
       [
         { text: "Cancel" },
-        { text: "Yes", onPress: () => removeEntry(index) },
+        {
+          text: "Yes", 
+          onPress: () => setMoodData([]),
+        },
       ]
     );
   };
-
-  const removeEntry = (index) => {
-    const updatedEntries = journalEntries.filter((_, i) => i !== index);
-    setJournalEntries(updatedEntries);
-  };
-
-  const handleImagePick = () => {
-    launchImageLibrary({ mediaType: 'photo', quality: 1 }, (response) => {
-      if (!response.didCancel && !response.error) {
-        setImageUri(response.assets[0].uri);
-      }
-    });
-  };
-
-  const handleTagChange = (tag) => {
-    if (tags.includes(tag)) {
-      setTags(tags.filter((t) => t !== tag));
-    } else {
-      setTags([...tags, tag]);
-    }
-  };
-
-  const filteredEntries = journalEntries.filter((entry) =>
-    entry.text.toLowerCase().includes(searchText.toLowerCase()) ||
-    entry.tags.some(tag => tag.toLowerCase().includes(searchText.toLowerCase()))
-  );
-
-  const renderJournalEntry = ({ item, index }) => (
-    <View style={styles.entryContainer}>
-      <Text style={styles.entryDate}>{formatDate(item.date)}</Text>
-      <Text style={styles.entryText}>{item.text}</Text>
-      {item.imageUri && <Image source={{ uri: item.imageUri }} style={styles.entryImage} />}
-      <Text style={styles.entryMood}>Mood: {item.mood}</Text>
-      <Text style={styles.entryTags}>Tags: {item.tags.join(', ')}</Text>
-      <TouchableOpacity onPress={() => deleteEntry(index)} style={styles.deleteButton}>
-        <Text style={styles.deleteButtonText}>Delete</Text>
-      </TouchableOpacity>
-    </View>
-  );
 
   const formatDate = (dateString) => {
     const date = new Date(dateString);
     return `${date.getDate()}/${date.getMonth() + 1}/${date.getFullYear()}`;
   };
 
+  const calculateStreak = () => {
+    if (moodData.length === 0) return 0;
+    let streak = 1;
+    let lastDate = new Date(moodData[moodData.length - 1].date);
+    for (let i = moodData.length - 2; i >= 0; i--) {
+      const currentDate = new Date(moodData[i].date);
+      const diffInDays = Math.floor((lastDate - currentDate) / (1000 * 3600 * 24));
+      if (diffInDays === 1) {
+        streak++;
+        lastDate = currentDate;
+      } else {
+        break;
+      }
+    }
+    return streak;
+  };
+
+  const renderMoodHistory = ({ item }) => {
+    return (
+      <View style={styles.historyItem}>
+        <Text style={styles.historyText}>{formatDate(item.date)} - Mood {item.mood}</Text>
+      </View>
+    );
+  };
+
+  const getMoodColor = (mood) => {
+    switch (mood) {
+      case 0: return '#FF6347'; // Red for low mood
+      case 1: return '#FFA500'; // Orange for slightly low mood
+      case 2: return '#FFFF00'; // Yellow for neutral mood
+      case 3: return '#32CD32'; // Green for happy mood
+      case 4: return '#0000FF'; // Blue for very happy
+      default: return '#FFFFFF';
+    }
+  };
+
   return (
-    <KeyboardAvoidingView
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      style={styles.container}
-    >
-      <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-        <ScrollView contentContainerStyle={styles.scrollViewContent}>
-          {/* Search Bar */}
-          <TextInput
-            style={styles.searchInput}
-            placeholder="Search journal entries"
-            value={searchText}
-            onChangeText={setSearchText}
-          />
+    <ScrollView contentContainerStyle={styles.scrollContainer} keyboardShouldPersistTaps="handled">
+      <View style={styles.container}>
+        <Text style={styles.title}>How are you feeling today?</Text>
 
-          {/* Mood Picker */}
-          <MoodPicker selectedMood={mood} onSelectMood={setMood} />
+        {/* Mood Picker with Color Feedback */}
+        <MoodPicker selectedMood={selectedMood} onSelectMood={setSelectedMood} />
+        
+        <View style={[styles.moodIndicator, { backgroundColor: getMoodColor(selectedMood) }]}>
+          <Text style={styles.moodIndicatorText}>{['Low', 'Slightly Low', 'Neutral', 'Happy', 'Very Happy'][selectedMood]}</Text>
+        </View>
+        
+        {/* Button to save mood */}
+        <TouchableOpacity style={styles.button} onPress={saveMood}>
+          <Text style={styles.buttonText}>Save Mood</Text>
+        </TouchableOpacity>
+        
+        {/* Display mood streak */}
+        <Text style={styles.streakText}>Current Mood Streak: {calculateStreak()} day(s)</Text>
 
-          {/* Text Input for Journal Entry */}
-          <TextInput
-            style={styles.input}
-            placeholder="Write about your day..."
-            multiline
-            value={entry}
-            onChangeText={(text) => {
-              setEntry(text);
-              setCharacterCount(text.length);
-            }}
-            maxLength={maxCharacterLimit}
-          />
-          <Text style={styles.characterCount}>{characterCount}/{maxCharacterLimit} characters</Text>
+        {/* Mood Distribution Pie Chart */}
+        <Text style={styles.chartTitle}>Mood Distribution</Text>
+        <PieChart
+          data={moodDistribution.map((count, index) => ({
+            name: ['Low', 'Slightly Low', 'Neutral', 'Happy', 'Very Happy'][index],
+            population: count,
+            color: getMoodColor(index),
+            legendFontColor: '#000',
+            legendFontSize: 15
+          }))}
+          width={300}
+          height={220}
+          chartConfig={{
+            backgroundColor: '#ffffff',
+            backgroundGradientFrom: '#ffffff',
+            backgroundGradientTo: '#ffffff',
+            color: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
+            labelColor: () => `rgba(0, 0, 0, 1)`,
+            strokeWidth: 2,
+            useShadowColorFromDataset: false,
+          }}
+          accessor="population"
+          backgroundColor="transparent"
+        />
+        
+        {/* Show Mood History */}
+        <Text style={styles.historyTitle}>Mood History</Text>
+        <FlatList
+          data={moodData}
+          renderItem={renderMoodHistory}
+          keyExtractor={(item, index) => index.toString()}
+          contentContainerStyle={styles.historyList}
+        />
 
-          {/* Tags */}
-          <View style={styles.tagContainer}>
-            <Text style={styles.tagTitle}>Tags:</Text>
-            {['Personal', 'Work', 'Health'].map((tag) => (
-              <TouchableOpacity
-                key={tag}
-                onPress={() => handleTagChange(tag)}
-                style={[styles.tagButton, tags.includes(tag) && styles.selectedTagButton]}
-              >
-                <Text style={styles.tagText}>{tag}</Text>
-              </TouchableOpacity>
-            ))}
-          </View>
+        {/* Clear History Button */}
+        <TouchableOpacity style={styles.clearButton} onPress={deleteMoodHistory}>
+          <Text style={styles.clearButtonText}>Clear Mood History</Text>
+        </TouchableOpacity>
 
-          {/* Image Picker */}
-          <TouchableOpacity onPress={handleImagePick} style={styles.imageButton}>
-            <Text style={styles.imageButtonText}>Pick an Image</Text>
-          </TouchableOpacity>
-          {imageUri && <Image source={{ uri: imageUri }} style={styles.imagePreview} />}
-
-          {/* Save Button */}
-          <TouchableOpacity style={styles.button} onPress={saveEntry}>
-            <Text style={styles.buttonText}>Save Entry</Text>
-          </TouchableOpacity>
-
-          {/* Journal Entries List */}
-          <FlatList
-            data={filteredEntries}
-            renderItem={renderJournalEntry}
-            keyExtractor={(item) => item.date}
-            style={styles.entriesList}
-          />
-        </ScrollView>
-      </TouchableWithoutFeedback>
-    </KeyboardAvoidingView>
+        {/* Reset Mood Data */}
+        <TouchableOpacity style={styles.clearButton} onPress={() => setMoodData([])}>
+          <Text style={styles.clearButtonText}>Reset All Data</Text>
+        </TouchableOpacity>
+      </View>
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1 },
-  scrollViewContent: { padding: 16, flexGrow: 1 },
-  input: {
-    fontSize: 16,
-    textAlignVertical: 'top',
-    borderColor: '#CCCCCC',
-    borderWidth: 1,
-    borderRadius: 10,
-    padding: 10,
-    marginBottom: 10,
-    height: 150,
+  scrollContainer: {
+    paddingBottom: 20, // Adds space at the bottom to prevent content from being hidden
   },
-  searchInput: {
-    fontSize: 16,
-    borderColor: '#CCCCCC',
-    borderWidth: 1,
-    borderRadius: 10,
-    padding: 10,
-    marginBottom: 10,
-  },
-  characterCount: {
-    fontSize: 14,
-    color: '#888',
-    marginBottom: 10,
-    textAlign: 'right',
-  },
-  tagContainer: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    marginBottom: 10,
-  },
-  tagTitle: {
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
-  tagButton: {
-    backgroundColor: '#f0f0f0',
-    padding: 8,
-    margin: 5,
-    borderRadius: 5,
-  },
-  selectedTagButton: {
-    backgroundColor: '#6C63FF',
-  },
-  tagText: {
-    fontSize: 14,
-    color: '#333',
-  },
-  imageButton: {
-    backgroundColor: '#6C63FF',
-    padding: 10,
-    borderRadius: 5,
-    alignItems: 'center',
-    marginBottom: 10,
-  },
-  imageButtonText: {
-    color: '#FFFFFF',
-    fontSize: 16,
-  },
-  imagePreview: {
-    width: 200,
-    height: 200,
-    marginBottom: 10,
-  },
+  container: { flex: 1, padding: 16 },
+  title: { fontSize: 24, fontWeight: 'bold', textAlign: 'center' },
   button: {
     backgroundColor: '#6C63FF',
     padding: 15,
     borderRadius: 10,
-    alignItems: 'center',
-  },
-  buttonText: { color: '#FFFFFF', fontSize: 18 },
-  entriesList: {
     marginTop: 20,
   },
-  entryContainer: {
-    backgroundColor: '#f9f9f9',
-    padding: 15,
+  buttonText: { color: '#FFFFFF', textAlign: 'center', fontSize: 18 },
+  moodIndicator: {
+    padding: 20,
+    marginTop: 20,
     borderRadius: 10,
+    alignItems: 'center',
+  },
+  moodIndicatorText: {
+    color: '#FFFFFF',
+    fontSize: 20,
+    fontWeight: 'bold',
+  },
+  streakText: {
+    fontSize: 18,
+    fontWeight: '600',
+    textAlign: 'center',
+    marginTop: 20,
+  },
+  chartTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    marginTop: 30,
+    textAlign: 'center',
+  },
+  historyTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    marginTop: 20,
     marginBottom: 10,
+    textAlign: 'center',
   },
-  entryDate: {
-    fontSize: 14,
-    color: '#888',
-    marginBottom: 5,
+  historyList: {
+    marginTop: 10,
+    paddingBottom: 20,
   },
-  entryText: {
+  historyItem: {
+    padding: 10,
+    backgroundColor: '#f2f2f2',
+    borderRadius: 10,
+    marginBottom: 8,
+  },
+  historyText: {
     fontSize: 16,
     color: '#333',
   },
-  entryImage: {
-    width: 200,
-    height: 200,
-    marginTop: 10,
-  },
-  entryMood: {
-    marginTop: 10,
-    fontSize: 14,
-    color: '#888',
-  },
-  entryTags: {
-    marginTop: 5,
-    fontSize: 14,
-    color: '#888',
-  },
-  deleteButton: {
-    marginTop: 10,
+  clearButton: {
     backgroundColor: '#FF6347',
-    padding: 10,
-    borderRadius: 5,
-    alignItems: 'center',
+    padding: 15,
+    borderRadius: 10,
+    marginTop: 20,
   },
-  deleteButtonText: {
+  clearButtonText: {
     color: '#FFFFFF',
-    fontSize: 16,
+    textAlign: 'center',
+    fontSize: 18,
   },
 });

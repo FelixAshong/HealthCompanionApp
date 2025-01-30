@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 
-const moods = ['😭', '😐', '🙂', '😄'];
+const moods = ['😭', '😢', '😐', '🙂', '😄'];
 
 export default function MoodPicker({ selectedMood, onSelectMood }) {
   return (
