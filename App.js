@@ -1,29 +1,28 @@
-import React, { useEffect } from 'react';
-import { SafeAreaView, StyleSheet, StatusBar, LogBox } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { SafeAreaView, StatusBar, LogBox } from 'react-native';
 import AppNavigator from './navigation/AppNavigator';
 import { AppProvider } from './context/AppContext';
-import * as SplashScreen from 'expo-splash-screen';
+import * as SplashScreen from 'expo-splash-screen'; // Import Expo SplashScreen
+import SplashScreenComponent from './components/SplashScreen'; // Your custom SplashScreen component
 
-// Disable the splash screen auto-hide to manually control it
+// Disable the splash screen auto-hide, so we can manually control it
 SplashScreen.preventAutoHideAsync();
 
-// Hide splash screen after your app is ready (e.g., after loading data or async operations)
-const hideSplashScreen = async () => {
-  await SplashScreen.hideAsync();
-};
-
 export default function App() {
+  const [isSplashReady, setSplashReady] = useState(false);
+
+  // Handle splash screen finish and hide it
+  const onSplashFinish = () => {
+    setSplashReady(true); // Set the state to hide splash screen after finish
+    SplashScreen.hideAsync(); // Hide the Expo splash screen
+  };
+
   useEffect(() => {
-    // Example of async work before hiding the splash screen
+    // Simulate an async operation (e.g., loading resources, etc.)
     const prepareApp = async () => {
-      try {
-        // Simulate an async operation (e.g., loading resources, etc.)
-        await new Promise(resolve => setTimeout(resolve, 2000)); // Simulate a 2-second loading
-        // After the async work, hide the splash screen
-        hideSplashScreen();
-      } catch (error) {
-        console.error('Error during app preparation:', error);
-      }
+      await new Promise(resolve => setTimeout(resolve, 2000)); // Simulate a 2-second delay
+      // Hide the splash screen after the delay
+      onSplashFinish();
     };
 
     prepareApp();
@@ -37,17 +36,16 @@ export default function App() {
 
   return (
     <AppProvider>
-      <SafeAreaView style={styles.container}>
+      <SafeAreaView style={{ flex: 1 }}>
         <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
-        <AppNavigator />
+
+        {/* Conditionally render the SplashScreen or the AppNavigator */}
+        {!isSplashReady ? (
+          <SplashScreenComponent onFinish={onSplashFinish} />
+        ) : (
+          <AppNavigator />
+        )}
       </SafeAreaView>
     </AppProvider>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#FFFFFF',
-  },
-});
