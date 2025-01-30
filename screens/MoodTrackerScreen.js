@@ -1,5 +1,5 @@
 import React, { useState, useContext, useEffect } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, FlatList, Alert, Image } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, FlatList, Alert, Image, ScrollView } from 'react-native';
 import MoodPicker from '../components/MoodPicker';
 import { AppContext } from '../context/AppContext';
 import { PieChart } from 'react-native-chart-kit'; // For the Pie chart (Install react-native-chart-kit)
@@ -79,73 +79,78 @@ export default function MoodTrackerScreen() {
   };
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>How are you feeling today?</Text>
-      
-      {/* Mood Picker with Color Feedback */}
-      <MoodPicker selectedMood={selectedMood} onSelectMood={setSelectedMood} />
-      
-      <View style={[styles.moodIndicator, { backgroundColor: getMoodColor(selectedMood) }]}>
-        <Text style={styles.moodIndicatorText}>{['Low', 'Slightly Low', 'Neutral', 'Happy', 'Very Happy'][selectedMood]}</Text>
+    <ScrollView contentContainerStyle={styles.scrollContainer} keyboardShouldPersistTaps="handled">
+      <View style={styles.container}>
+        <Text style={styles.title}>How are you feeling today?</Text>
+
+        {/* Mood Picker with Color Feedback */}
+        <MoodPicker selectedMood={selectedMood} onSelectMood={setSelectedMood} />
+        
+        <View style={[styles.moodIndicator, { backgroundColor: getMoodColor(selectedMood) }]}>
+          <Text style={styles.moodIndicatorText}>{['Low', 'Slightly Low', 'Neutral', 'Happy', 'Very Happy'][selectedMood]}</Text>
+        </View>
+        
+        {/* Button to save mood */}
+        <TouchableOpacity style={styles.button} onPress={saveMood}>
+          <Text style={styles.buttonText}>Save Mood</Text>
+        </TouchableOpacity>
+        
+        {/* Display mood streak */}
+        <Text style={styles.streakText}>Current Mood Streak: {calculateStreak()} day(s)</Text>
+
+        {/* Mood Distribution Pie Chart */}
+        <Text style={styles.chartTitle}>Mood Distribution</Text>
+        <PieChart
+          data={moodDistribution.map((count, index) => ({
+            name: ['Low', 'Slightly Low', 'Neutral', 'Happy', 'Very Happy'][index],
+            population: count,
+            color: getMoodColor(index),
+            legendFontColor: '#000',
+            legendFontSize: 15
+          }))}
+          width={300}
+          height={220}
+          chartConfig={{
+            backgroundColor: '#ffffff',
+            backgroundGradientFrom: '#ffffff',
+            backgroundGradientTo: '#ffffff',
+            color: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
+            labelColor: () => `rgba(0, 0, 0, 1)`,
+            strokeWidth: 2,
+            useShadowColorFromDataset: false,
+          }}
+          accessor="population"
+          backgroundColor="transparent"
+        />
+        
+        {/* Show Mood History */}
+        <Text style={styles.historyTitle}>Mood History</Text>
+        <FlatList
+          data={moodData}
+          renderItem={renderMoodHistory}
+          keyExtractor={(item, index) => index.toString()}
+          contentContainerStyle={styles.historyList}
+        />
+
+        {/* Clear History Button */}
+        <TouchableOpacity style={styles.clearButton} onPress={deleteMoodHistory}>
+          <Text style={styles.clearButtonText}>Clear Mood History</Text>
+        </TouchableOpacity>
+
+        {/* Reset Mood Data */}
+        <TouchableOpacity style={styles.clearButton} onPress={() => setMoodData([])}>
+          <Text style={styles.clearButtonText}>Reset All Data</Text>
+        </TouchableOpacity>
       </View>
-      
-      {/* Button to save mood */}
-      <TouchableOpacity style={styles.button} onPress={saveMood}>
-        <Text style={styles.buttonText}>Save Mood</Text>
-      </TouchableOpacity>
-      
-      {/* Display mood streak */}
-      <Text style={styles.streakText}>Current Mood Streak: {calculateStreak()} day(s)</Text>
-
-      {/* Mood Distribution Pie Chart */}
-      <Text style={styles.chartTitle}>Mood Distribution</Text>
-      <PieChart
-        data={moodDistribution.map((count, index) => ({
-          name: ['Low', 'Slightly Low', 'Neutral', 'Happy', 'Very Happy'][index],
-          population: count,
-          color: getMoodColor(index),
-          legendFontColor: '#000',
-          legendFontSize: 15
-        }))}
-        width={300}
-        height={220}
-        chartConfig={{
-          backgroundColor: '#ffffff',
-          backgroundGradientFrom: '#ffffff',
-          backgroundGradientTo: '#ffffff',
-          color: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
-          labelColor: () => `rgba(0, 0, 0, 1)`,
-          strokeWidth: 2,
-          useShadowColorFromDataset: false,
-        }}
-        accessor="population"
-        backgroundColor="transparent"
-      />
-      
-      {/* Show Mood History */}
-      <Text style={styles.historyTitle}>Mood History</Text>
-      <FlatList
-        data={moodData}
-        renderItem={renderMoodHistory}
-        keyExtractor={(item, index) => index.toString()}
-        contentContainerStyle={styles.historyList}
-      />
-
-      {/* Clear History Button */}
-      <TouchableOpacity style={styles.clearButton} onPress={deleteMoodHistory}>
-        <Text style={styles.clearButtonText}>Clear Mood History</Text>
-      </TouchableOpacity>
-
-      {/* Reset Mood Data */}
-      <TouchableOpacity style={styles.clearButton} onPress={() => setMoodData([])}>
-        <Text style={styles.clearButtonText}>Reset All Data</Text>
-      </TouchableOpacity>
-    </View>
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 16, justifyContent: 'center' },
+  scrollContainer: {
+    paddingBottom: 20, // Adds space at the bottom to prevent content from being hidden
+  },
+  container: { flex: 1, padding: 16 },
   title: { fontSize: 24, fontWeight: 'bold', textAlign: 'center' },
   button: {
     backgroundColor: '#6C63FF',
