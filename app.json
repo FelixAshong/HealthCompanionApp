@@ -4,25 +4,49 @@
     "slug": "HealthCompanionApp",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/icon.png",
-    "userInterfaceStyle": "light",
-    "newArchEnabled": true,
+    "icon": "./assets/health.jpg", // Path to the app icon
+    "userInterfaceStyle": "light", // UI style (light mode)
+    "newArchEnabled": true, // Enables the new architecture
     "splash": {
-      "image": "./assets/splash-icon.png",
-      "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
+      "image": "./assets/health.jpg", // Path to splash screen image
+      "resizeMode": "contain", // Controls the splash screen image scaling
+      "backgroundColor": "#ffffff" // Background color of the splash screen
     },
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true, // Enables tablet support for iOS
+      "bundleIdentifier": "com.yourcompany.healthcompanionapp", // iOS bundle identifier (customize this)
+      "buildNumber": "1.0.0", // Build number for iOS
+      "icon": "./assets/health.jpg", // iOS icon (can use the same icon as the app icon)
+      "splash": {
+        "image": "./assets/health.jpg", // iOS splash screen image
+        "resizeMode": "contain", // iOS splash resize mode
+        "backgroundColor": "#ffffff" // Background color for the splash screen on iOS
+      }
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#ffffff"
+        "foregroundImage": "./assets/health.jpg", // Android adaptive icon image
+        "backgroundColor": "#ffffff" // Background color for the Android adaptive icon
+      },
+      "package": "com.yourcompany.healthcompanionapp", // Android package name (customize this)
+      "versionCode": 1, // Android version code (increment with new releases)
+      "icon": "./assets/health.jpg", // Android app icon (can use the same icon as the app icon)
+      "splash": {
+        "image": "./assets/health.jpg", // Android splash screen image
+        "resizeMode": "contain", // Android splash resize mode
+        "backgroundColor": "#ffffff" // Background color for the splash screen on Android
       }
     },
     "web": {
-      "favicon": "./assets/favicon.png"
+      "favicon": "./assets/health.jpg" // Web favicon path
+    },
+    "assetBundlePatterns": [
+      "**/*" // Ensures that all assets in the project are bundled
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "your-eas-project-id" // Optional: Your Expo EAS project ID (if using Expo Application Services)
+      }
     }
   }
 }

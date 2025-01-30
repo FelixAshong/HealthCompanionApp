@@ -37,12 +37,21 @@ export default function AppNavigator() {
               iconName = focused ? 'information-circle' : 'information-circle-outline';
             }
 
-            // Return the icon component
             return <Ionicons name={iconName} size={size} color={color} />;
           },
           tabBarActiveTintColor: '#6C63FF', // Active tab color
           tabBarInactiveTintColor: 'gray', // Inactive tab color
-          tabBarStyle: { paddingBottom: 5, paddingTop: 5 }, // Customize tab bar style
+          tabBarStyle: {
+            paddingBottom: 10,
+            paddingTop: 10,
+            backgroundColor: '#f4f4f4', // Custom background color for tab bar
+            borderTopWidth: 0, // Remove default border
+            shadowColor: '#000', // Shadow for iOS
+            shadowOffset: { width: 0, height: -3 },
+            shadowOpacity: 0.1,
+            shadowRadius: 4, // Shadow radius for iOS
+            elevation: 5, // Elevation for Android
+          },
         })}
       >
         <Tab.Screen
@@ -53,7 +62,7 @@ export default function AppNavigator() {
         <Tab.Screen
           name="MoodTracker"
           component={MoodTrackerScreen}
-          options={{ title: 'Mood' }}
+          options={{ title: 'Mood Tracker' }}
         />
         <Tab.Screen
           name="Journal"
@@ -63,7 +72,7 @@ export default function AppNavigator() {
         <Tab.Screen
           name="BreathingExercise"
           component={BreathingExerciseScreen}
-          options={{ title: 'Breathing' }}
+          options={{ title: 'Breathing Exercise' }}
         />
         <Tab.Screen
           name="Affirmations"
@@ -73,7 +82,7 @@ export default function AppNavigator() {
         <Tab.Screen
           name="GratitudeLog"
           component={GratitudeLogScreen}
-          options={{ title: 'Gratitude' }}
+          options={{ title: 'Gratitude Log' }}
         />
         <Tab.Screen
           name="Resources"
