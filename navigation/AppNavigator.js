@@ -57,37 +57,37 @@ export default function AppNavigator() {
         <Tab.Screen
           name="Home"
           component={HomeScreen}
-          options={{ title: 'Home' }}
+          options={{ title: '' }}
         />
         <Tab.Screen
           name="MoodTracker"
           component={MoodTrackerScreen}
-          options={{ title: 'Mood Tracker' }}
+          options={{ title: '' }}
         />
         <Tab.Screen
           name="Journal"
           component={JournalScreen}
-          options={{ title: 'Journal' }}
+          options={{ title: '' }}
         />
         <Tab.Screen
           name="BreathingExercise"
           component={BreathingExerciseScreen}
-          options={{ title: 'Breathing Exercise' }}
+          options={{ title: '' }}
         />
         <Tab.Screen
           name="Affirmations"
           component={AffirmationsScreen}
-          options={{ title: 'Affirmations' }}
+          options={{ title: '' }}
         />
         <Tab.Screen
           name="GratitudeLog"
           component={GratitudeLogScreen}
-          options={{ title: 'Gratitude Log' }}
+          options={{ title: '' }}
         />
         <Tab.Screen
           name="Resources"
           component={ResourcesScreen}
-          options={{ title: 'Resources' }}
+          options={{ title: '' }}
         />
       </Tab.Navigator>
     </NavigationContainer>

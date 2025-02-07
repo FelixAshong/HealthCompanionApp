@@ -39,27 +39,28 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20, // Added padding for smaller screens
   },
   logo: {
-    width: 150, // Adjust the size to fit your design
-    height: 150,
+    width: 180, // Adjust the size to fit your design
+    height: 180,
     resizeMode: 'contain',
     marginBottom: 20,
   },
   appName: {
-    fontSize: 24, // Increase font size for a more stylized look
-    fontWeight: '600', // A lighter weight for a stylish effect
-    color: '#007AFF', // Blue text color
+    fontSize: 28, // Larger font size for a more prominent look
+    fontWeight: '700', // Bold for the app name
+    color: '#007AFF', // Blue text color for the app name
     textAlign: 'center',
-    fontFamily: 'Arial', // You can replace this with a custom font if desired
+    fontFamily: 'Arial', // Replace with a custom font if desired
     marginBottom: 20, // Adds space between the logo and the app name
+    letterSpacing: 1.5, // Slight letter spacing for a clean look
   },
   author: {
     position: 'absolute',
-    bottom: 20, // Position near the bottom
+    bottom: 30, // Position near the bottom for better spacing
     fontSize: 18,
     fontWeight: '400', // Slightly lighter weight for your name
     color: '#007AFF', // Blue text color for your name
     textAlign: 'center',
-    fontFamily: 'Arial', // Replace with custom font if needed
+    fontFamily: 'Arial', // Replace with a custom font if needed
     width: '100%', // Ensure it's properly aligned in smaller screens
   },
 });

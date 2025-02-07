@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { SafeAreaView, StatusBar, LogBox } from 'react-native';
-import AppNavigator from './navigation/AppNavigator';
-import { AppProvider } from './context/AppContext';
+import AppNavigator from './navigation/AppNavigator'; // Your navigation setup
+import { AppProvider } from './context/AppContext'; // Global context provider
 import * as SplashScreen from 'expo-splash-screen'; // Import Expo SplashScreen
 import SplashScreenComponent from './components/SplashScreen'; // Your custom SplashScreen component
 
@@ -20,9 +20,15 @@ export default function App() {
   useEffect(() => {
     // Simulate an async operation (e.g., loading resources, etc.)
     const prepareApp = async () => {
-      await new Promise(resolve => setTimeout(resolve, 2000)); // Simulate a 2-second delay
-      // Hide the splash screen after the delay
-      onSplashFinish();
+      try {
+        // Simulate a 2-second delay for loading resources or async tasks
+        await new Promise(resolve => setTimeout(resolve, 2000));
+        
+        // Call the splash screen finish function
+        onSplashFinish();
+      } catch (error) {
+        console.error("Error during app preparation:", error);
+      }
     };
 
     prepareApp();
@@ -38,11 +44,13 @@ export default function App() {
     <AppProvider>
       <SafeAreaView style={{ flex: 1 }}>
         <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
-
+        
         {/* Conditionally render the SplashScreen or the AppNavigator */}
         {!isSplashReady ? (
+          // Show custom splash screen while loading
           <SplashScreenComponent onFinish={onSplashFinish} />
         ) : (
+          // Show the main app after splash screen is ready
           <AppNavigator />
         )}
       </SafeAreaView>

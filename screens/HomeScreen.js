@@ -10,6 +10,7 @@ import {
   Linking,
 } from 'react-native';
 import Carousel from 'react-native-reanimated-carousel'; // Only this import
+import AppHeader from '../components/AppHeader'; // Import AppHeader component
 
 const { width: screenWidth } = Dimensions.get('window');
 
@@ -78,6 +79,9 @@ export default function HomeScreen({ navigation }) {
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
+      {/* Header Section */}
+      <AppHeader navigation={navigation} /> {/* Add AppHeader at the top */}
+
       {/* Welcome Section */}
       <View style={styles.welcomeSection}>
         <Text style={styles.welcomeTitle}>Welcome to Your Mental Health Companion</Text>
